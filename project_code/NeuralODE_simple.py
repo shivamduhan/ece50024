@@ -28,7 +28,7 @@ class ODEFunc(nn.Module):
 in_dim = 2  # MNIST image size (28x28)
 h = 128
 batch_size = 50
-num_epochs = 10
+num_epochs = 1000
 lr = 3e-4
 
 if __name__ == '__main__':
@@ -38,6 +38,7 @@ if __name__ == '__main__':
     num_points = 200
 
     t_eval, true_data = gen_spiral_data(t_min, t_max, num_points)
+
     # Training loop
     # Create the model, solver, loss function, and optimizer
     ode_func = ODEFunc(in_dim, h)
@@ -50,20 +51,17 @@ if __name__ == '__main__':
         # Get predictions
         z_0 = true_data[0]
         pred_data = solver.solve(z_0, t_eval)
-        
         loss = loss_fn(pred_data, true_data)
-        
         optimizer.zero_grad()
         # Gradient of loss with respect to last output = d(z_T - z^hat_T)^2 / N = = 2 (z_T - z^hat_T) / B
         dLdz_T = 2 * (pred_data[-1] - true_data[-1]) / num_points
         # Calculate the gradients using adjoint method 
         dLdz_0, dLdp = adjoint_solve(ode_func, pred_data[-1], t_eval, tuple(ode_func.parameters()), dLdz_T)
-
         # Update the model parameters (set gradients and step)
         for param, grad in zip(ode_func.parameters(), dLdp):
             param.grad = grad
         optimizer.step()
 
         # Print the loss for every 100 epochs
-        if (epoch + 1) % 100 == 0:
+        if (epoch + 1) % 10 == 0:
             print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.6f}")
