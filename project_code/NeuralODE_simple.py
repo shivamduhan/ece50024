@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from torchvision import transforms, datasets
 from ODE_solvers import *
 from fit_function_gen import *
 
@@ -26,8 +25,7 @@ class ODEFunc(nn.Module):
 
 # Hyperparameters
 in_dim = 2  # MNIST image size (28x28)
-h = 128
-batch_size = 50
+h = 64
 num_epochs = 1000
 lr = 3e-4
 
@@ -36,8 +34,8 @@ if __name__ == '__main__':
     t_min = 0
     t_max = 6 * np.pi
     num_points = 200
-
     t_eval, true_data = gen_spiral_data(t_min, t_max, num_points)
+    dt = np.abs(t_eval[0] - t_eval[1])
 
     # Training loop
     # Create the model, solver, loss function, and optimizer
@@ -48,20 +46,26 @@ if __name__ == '__main__':
 
     # Training loop
     for epoch in range(num_epochs):
+        optimizer.zero_grad()
+
         # Get predictions
         z_0 = true_data[0]
-        pred_data = solver.solve(z_0, t_eval)
+        pred_data = solver.solve(z_0, t_eval, dt)
         loss = loss_fn(pred_data, true_data)
-        optimizer.zero_grad()
-        # Gradient of loss with respect to last output = d(z_T - z^hat_T)^2 / N = = 2 (z_T - z^hat_T) / B
-        dLdz_T = 2 * (pred_data[-1] - true_data[-1]) / num_points
-        # Calculate the gradients using adjoint method 
-        dLdz_0, dLdp = adjoint_solve(ode_func, pred_data[-1], t_eval, tuple(ode_func.parameters()), dLdz_T)
-        # Update the model parameters (set gradients and step)
-        for param, grad in zip(ode_func.parameters(), dLdp):
-            param.grad = grad
-        optimizer.step()
 
-        # Print the loss for every 100 epochs
+        # Iterate over time points in reverse order
+        for t in range(len(t_eval) - 2, 0, -1):
+            dLdz = 2 * (pred_data[t] - true_data[t]) / num_points
+
+            # Calculate the gradients using adjoint method
+            _, dLdp = adjoint_solve(ode_func, pred_data[t], t_eval[t:t+2], tuple(ode_func.parameters()), dLdz, dt)
+
+            # Apply gradients to the model parameters
+            for param, grad in zip(ode_func.parameters(), dLdp):
+                param.grad = grad
+
+            optimizer.step()
+
+        # Print the loss for every 10 epochs
         if (epoch + 1) % 10 == 0:
             print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.6f}")

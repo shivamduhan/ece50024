@@ -28,8 +28,7 @@ class ODESolver:
     def __init__(self, func):
         self.func = func
 
-    def solve(self, y_init, t):
-        dt = np.abs(t[-1] - t[-2])
+    def solve(self, y_init, t, dt):
         # For now use this for backward pass for augmented state
         if isinstance(y_init, tuple):
             # If y_init is a tuple, create a tuple of zero tensors for each element
@@ -60,7 +59,7 @@ class ODESolver:
 # t := array of time points
 # model_prams := theta
 # dLdz_T := gradient of the loss with respect to final state
-def adjoint_solve(func, z_final, t, model_params, dLdz_T):
+def adjoint_solve(func, z_final, t, model_params, dLdz_T, dt):
     # Initial augmented state s_0
     s_0 = (z_final, dLdz_T) + tuple(torch.zeros(param.shape, dtype = param.dtype, device = param.device) for param in model_params)
 
@@ -90,9 +89,8 @@ def adjoint_solve(func, z_final, t, model_params, dLdz_T):
 
     # Reverse the time points for solving the augmented ODE backward in time
     t_reversed = torch.flip(torch.tensor(t), [0])
-
     # Solve the augmented ODE backward in time using the ODESolver
-    s_T = solver.solve(s_0, t_reversed)
+    s_T = solver.solve(s_0, t_reversed, dt)
     # Extract the final augmented state
     _, adj_z_T, *adj_params_T = s_T
     adj_z_T = adj_z_T[-1]
