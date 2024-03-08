@@ -9,8 +9,6 @@ from fit_function_gen import *
 
 # Solving an ODE for a pre-defined function
 def experiment1(t_eval):
-    
-    # Experiment 1: Check the forward pass first
     # Function to test (we want to find the derivative of that function)
     func_test = sin_cos_comb(2, 4)
     derivative_vals = func_test(t_eval, torch.tensor([0]))
@@ -18,18 +16,17 @@ def experiment1(t_eval):
     # Solve the ODE
     solver = ODESolver(func_test)
     solved_ODE = solver(y_init, t = t_eval)
+    
     # Plot
-    
-    
     # Create a figure and two subplots
-    fig, axs = plt.subplots(2, 1, figsize=(8, 6))
+    fig, axs = plt.subplots(2, 1, figsize = (8, 6))
 
     # Plot solved ODE on the first subplot
     axs[0].plot(t_eval, solved_ODE)
     axs[0].set_title('Solved ODE')
 
     # Plot derivative values on the second subplot
-    axs[1].plot(t_eval, derivative_vals, color='r')
+    axs[1].plot(t_eval, derivative_vals, color = 'r')
     axs[1].set_title('Derivative Values')
 
     # Add labels and adjust layout
@@ -41,7 +38,7 @@ def experiment1(t_eval):
     axs[1].grid()
     
     # Show the plot
-    plt.savefig(fname="exp1.png", format="png")
+    plt.savefig(fname= "./pictures/exp1.png", format = "png")
     plt.close()
     return
 
@@ -66,7 +63,7 @@ def experiment2(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_point
     plt.plot(true_y[:, 0].cpu(), true_y[:, 1].cpu())
     plt.title('Original Spiral')
     plt.grid()
-    plt.savefig('orig_spiral.png')
+    plt.savefig('./pictures/orig_spiral.png')
     plt.close()
 
     # Training
@@ -92,7 +89,7 @@ def experiment2(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_point
             plt.title(f'Predicted Spiral Data after {show_epochs[epoch_iter]} epochs of training')
             plt.legend()
             plt.grid()
-            plt.savefig(f'pred_spiral_{show_epochs[epoch_iter]}.png')
+            plt.savefig(f'./pictures/pred_spiral_{show_epochs[epoch_iter]}.png')
             plt.close()
             epoch_iter += 1
             
@@ -118,7 +115,7 @@ def experiment2(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_point
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.grid()
-    plt.savefig('loss_spiral.png')
+    plt.savefig('./pictures/loss_spiral.png')
     plt.close()
     
 if __name__ == '__main__':
