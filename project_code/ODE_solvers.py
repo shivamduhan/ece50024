@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import numpy as np
 
 # TODO: implement more solvers
@@ -9,7 +10,8 @@ def rk4_step(func, y_prev, t, dt):
         k_2 = func(t + dt / 2, y_prev + dt * k_1 / 2)
         k_3 = func(t + dt / 2, y_prev + dt * k_2 / 2)
         k_4 = func(t + dt, y_prev + dt * k_3)
-        y_next = y_prev + dt / 6 * (k_1 + 2 * k_2 + 2 * k_3 + k_4)
+        dy = dt / 6 * (k_1 + 2 * k_2 + 2 * k_3 + k_4)
+        return dy
     else:
         # First element follows normally
         k_1 = func(t, y_prev)
@@ -24,11 +26,12 @@ def rk4_step(func, y_prev, t, dt):
     return y_next
 
 # Solves the desired ODE
-class ODESolver:
+class ODESolver(nn.Module):
     def __init__(self, func):
+        super(ODESolver, self).__init__()
         self.func = func
 
-    def solve(self, y_init, t, dt):
+    def forward(self, y_init, t, dt):
         # For now use this for backward pass for augmented state
         if isinstance(y_init, tuple):
             # If y_init is a tuple, create a tuple of zero tensors for each element
@@ -44,13 +47,17 @@ class ODESolver:
                     y[j][i] = y_next[j]
         # For now use this for forward pass for output
         else:
-            # If y_init is a tensor, create a tensor of zeros
-            y = torch.zeros((len(t), *y_init.shape), dtype = y_init.dtype, device = y_init.device)
-            y[0] = y_init
+            # Create a tensor of zeros to store the solution
+            # y = torch.zeros((len(t), *y_init.shape), dtype = y_init.dtype, device = y_init.device)
+            sol = []
+            sol.append(y_init)
             for i in range(1, len(t)):
-                y[i] = rk4_step(self.func, y[i - 1], t[i - 1], dt)
-
-        return y
+                dy = rk4_step(self.func, y_init, t[i - 1], dt)
+                y_next = y_init + dy
+                sol.append(y_next)
+                y_init = y_next
+        sol = torch.cat(sol)        
+        return sol
         
 # Implementation of Algorithm 1: Reverse-mode derivative of an ODE initial value problem from the paper
 # Return gradients of loss with respect to parameters for backprop
@@ -67,7 +74,6 @@ def adjoint_solve(func, z_final, t, model_params, dLdz_T, dt):
     def aug_dynamics(t, s):
         # Get the current state and the adjoint
         z, a, *_ = s
-
         # Calculate the vector-Jacobian products
         with torch.enable_grad():
             # First calculate the output of the function given current state and time
@@ -90,7 +96,7 @@ def adjoint_solve(func, z_final, t, model_params, dLdz_T, dt):
     # Reverse the time points for solving the augmented ODE backward in time
     t_reversed = torch.flip(torch.tensor(t), [0])
     # Solve the augmented ODE backward in time using the ODESolver
-    s_T = solver.solve(s_0, t_reversed, dt)
+    s_T = solver.forward(s_0, t_reversed, dt)
     # Extract the final augmented state
     _, adj_z_T, *adj_params_T = s_T
     adj_z_T = adj_z_T[-1]

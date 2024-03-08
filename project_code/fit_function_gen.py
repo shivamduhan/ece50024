@@ -1,5 +1,19 @@
 import numpy as np
 import torch
+import torch.nn as nn
+
+class cos(nn.Module):
+    def forward(self, t, y):
+        return torch.cos(t)
+
+class sin_cos_comb(nn.Module):
+    def __init__(self, a, b):
+        super(sin_cos_comb, self).__init__()
+        self.a = a
+        self.b = b
+    def forward(self, t, y):
+        return self.a * torch.sin(t) + self.b * torch.cos(t)
+    
 
 # TODO: Add more functions to test fitting
 def gen_spiral_data(t_min, t_max, num_points):
@@ -11,3 +25,6 @@ def gen_spiral_data(t_min, t_max, num_points):
     spiral_tensor = torch.from_numpy(spiral_data).float()
     
     return t, spiral_tensor
+
+
+
