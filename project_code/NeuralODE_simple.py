@@ -1,6 +1,7 @@
 import torch 
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 import matplotlib.pyplot as plt 
 
@@ -8,13 +9,10 @@ from ODE_solvers import *
 from fit_function_gen import *
 from experiments import *
 
-torch.manual_seed(0)
-np.random.seed(0)
+# Use CPU for now, change to GPU later
+dev_used = torch.device('cpu')
 
-dev_used = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-# Define the ODE Function as an example MLP
-
+# Define the ODE Function as a neural net
 class ODEFunc(nn.Module):
     def __init__(self, in_dim, hidden_dim = 64):
         super(ODEFunc, self).__init__()
@@ -23,60 +21,33 @@ class ODEFunc(nn.Module):
         self.fc1 = nn.Linear(hidden_dim, in_dim)
 
     def forward(self, t, y):
-        dy_dt = self.fc1(self.tanh(self.fc0(y)))
+        dy_dt = self.fc1(self.tanh(self.fc0(y ** 3)))
         return dy_dt
 
-
-'''
-class ODEFunc(nn.Module):
-    def __init__(self, in_dim = 2):
-        super(ODEFunc, self).__init__()
-        self.fc0 = nn.Linear(in_dim, in_dim, bias = True)
-    
-    def forward(self, t, x):
-        y = self.fc0(x)
-        return y
-'''
-# Hyperparameters
-in_dim = 2  # MNIST image size (28x28)
-h = 128
-num_epochs = 1000 # 1000
-lr = 1e-2
-
-
-
+# Hyperparameters for the training
+in_dim = 2       # 2D data
+h = 192          # hidden dimension size
+batch_size = 500 # Batch size
+num_epochs = 501 # Total epochs of training
+lr = 1e-3        # Learning rate
 
 if __name__ == '__main__':
-    # Generate timing data
+    # Generate timing data (for our task we generate trajectories over time)
     t_min = 0.0
     t_max = 6 * np.pi
-    num_points = 2000
+    num_points = 2500
     t_eval = torch.linspace(t_min, t_max, num_points)
-    dt = np.abs(t_eval[0] - t_eval[1])
+
     # Experiment 1
-    experiment1(t_eval, dt)
+    # Test RK4 and ODE solver implementations
+    experiment1(t_eval)
     
     # Experiment 2
-    # Generate data
-    true_y0 = torch.tensor([[2.0, 0.0]])
-    t_new = torch.linspace(0., 50., num_points)
-    true_A = torch.tensor([[-0.1, 5.0], [-5.0, -2.0]])
+    # Train a NeuralODE using backprop through the ODESovler
+    # We use spirals similar to the paper
+    experiment2(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_points)
     
-    class Lambda(nn.Module):
-        def forward(self, t, y):
-            return torch.mm(y ** 3, true_A)
-    
-    with torch.no_grad():
-        node = ODESolver(Lambda())
-        true_y = node(true_y0, t_new, dt)
-
-    plt.plot(true_y[:, 0], true_y[:, 1])
-    plt.show()
-    
-    # Training
-    ode_func = ODEFunc(in_dim)
-    solver = ODESolver(ode_func)
-    
+    # Adjoint methodcode, TODO: fix
     '''
     # Training loop
     # Create the model, solver, loss function, and optimizer

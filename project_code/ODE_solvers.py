@@ -31,7 +31,7 @@ class ODESolver(nn.Module):
         super(ODESolver, self).__init__()
         self.func = func
 
-    def forward(self, y_init, t, dt):
+    def forward(self, y_init, t):
         # For now use this for backward pass for augmented state
         if isinstance(y_init, tuple):
             # If y_init is a tuple, create a tuple of zero tensors for each element
@@ -52,6 +52,7 @@ class ODESolver(nn.Module):
             sol = []
             sol.append(y_init)
             for i in range(1, len(t)):
+                dt = t[i] - t[i - 1]
                 dy = rk4_step(self.func, y_init, t[i - 1], dt)
                 y_next = y_init + dy
                 sol.append(y_next)
