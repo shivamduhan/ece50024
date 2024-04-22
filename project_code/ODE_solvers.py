@@ -37,14 +37,19 @@ class ODESolver(nn.Module):
             # If y_init is a tuple, create a tuple of zero tensors for each element
             y = tuple(torch.zeros((len(t), *element.shape), dtype = element.dtype, device = element.device)
                       for element in y_init)
+            sol = []
+            sol.append(y_init)
             for i in range(len(y_init)):
                 y[i][0] = y_init[i]
 
             for i in range(1, len(t)):
+                dt = t[i] - t[i - 1]
                 y_prev = tuple(element[i - 1] for element in y)
                 y_next = rk4_step(self.func, y_prev, t[i - 1], dt)
+                sol.append(y_next)
                 for j in range(len(y)):
                     y[j][i] = y_next[j]
+            return sol
         # For now use this for forward pass for output
         else:
             # Create a tensor of zeros to store the solution
@@ -95,16 +100,14 @@ def adjoint_solve(func, z_final, t, model_params, dLdz_T, dt):
     solver = ODESolver(aug_dynamics)
 
     # Reverse the time points for solving the augmented ODE backward in time
-    t_reversed = torch.flip(torch.tensor(t), [0])
+    t_reversed = torch.flip(torch.tensor(t), [0])    
     # Solve the augmented ODE backward in time using the ODESolver
-    print(s_0)
-    print("\n")
-    print(t_reversed)
-    print("\n")
-    print(dt)
-    s_T = solver.forward(s_0, t_reversed, dt)
+
+    s_T = solver.forward(s_0, t_reversed)
+    
     # Extract the final augmented state
     _, adj_z_T, *adj_params_T = s_T
+    
     adj_z_T = adj_z_T[-1]
     for i, param in enumerate(adj_params_T):
         adj_params_T[i] = param[-1]
