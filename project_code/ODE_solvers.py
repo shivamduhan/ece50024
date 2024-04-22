@@ -97,6 +97,11 @@ def adjoint_solve(func, z_final, t, model_params, dLdz_T, dt):
     # Reverse the time points for solving the augmented ODE backward in time
     t_reversed = torch.flip(torch.tensor(t), [0])
     # Solve the augmented ODE backward in time using the ODESolver
+    print(s_0)
+    print("\n")
+    print(t_reversed)
+    print("\n")
+    print(dt)
     s_T = solver.forward(s_0, t_reversed, dt)
     # Extract the final augmented state
     _, adj_z_T, *adj_params_T = s_T

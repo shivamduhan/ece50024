@@ -97,12 +97,34 @@ def experiment2(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_point
         optimizer.zero_grad()
         # Get a batch of times and y values to test for
         batch_t = list(sorted(t_new[np.random.choice(t_new.shape[0], size = batch_size, replace = False)]))
+        dt = np.abs(batch_t[0] - batch_t[1])
+        print(dt)
+
         batch_y = true_y[batch_t]
         # Get the predict for these times starting at the ground truth (since IVP, we always have y0)
         pred_y = solver(true_y0, batch_t)
         # Calculate the loss and backprop
         loss = loss_fn(pred_y, batch_y)
-        loss.backward()
+
+        # Calculate the initial gradient dLdz using autograd
+        z_T = pred_y[-1]
+        z_T.requires_grad_(True)
+        loss_at_T = loss_fn(z_T, true_y[-1])
+        dLdz_T = torch.autograd.grad(loss_at_T, z_T)[0]
+
+        # Iterate over time points in reverse order
+        for t in range(len(batch_t) - 2, 0, -1):
+            # Calculate the gradients using adjoint method
+            dLdz_T, dLdp = adjoint_solve(ode_func, pred_y[t], batch_t[t: t + 2], tuple(ode_func.parameters()), dLdz_T, dt)
+
+            # Accumulate gradients for each model parameter
+            for param, grad in zip(ode_func.parameters(), dLdp):
+                param.grad = param.grad + grad if param.grad is not None else grad
+        # Normalize gradients
+        for param in ode_func.parameters():
+            if param.grad is not None:
+                param.grad /= len(batch_t)
+
         optimizer.step()
         # For saving the loss
         loss_ls.append(loss.cpu().item())
