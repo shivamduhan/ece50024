@@ -171,8 +171,9 @@ def experiment3(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_point
         # Reset the optimizer gradients to 0 befroe any backprop
         optimizer.zero_grad()
         # Get a batch of times and y values to test for
-        batch_t = list(sorted(t_new[np.random.choice(t_new.shape[0], size = batch_size, replace = False)]))
-        batch_y = true_y[batch_t]
+        # batch_t = list(sorted(t_new[np.random.choice(t_new.shape[0], size = batch_size, replace = False)]))
+        batch_t = t_new
+        batch_y = true_y
         # Get the predict for these times starting at the ground truth (since IVP, we always have y0)
         pred_y = solver(true_y0, batch_t)
         
@@ -190,7 +191,6 @@ def experiment3(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_point
             # Calculate the gradients using adjoint method
             dt = np.abs(batch_t[t + 1] - batch_t[t])
             dLdz_T, dLdp = adjoint_solve(ode_func, pred_y[t], batch_t[t: t + 2], tuple(ode_func.parameters()), dLdz_T, dt)
-
             # Accumulate gradients for each model parameter
             for param, grad in zip(ode_func.parameters(), dLdp):
                 param.grad = param.grad + grad if param.grad is not None else grad

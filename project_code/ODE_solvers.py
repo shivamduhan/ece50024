@@ -49,6 +49,7 @@ class ODESolver(nn.Module):
                 sol.append(y_next)
                 for j in range(len(y)):
                     y[j][i] = y_next[j]
+            print(sol[-1][-1])
             return sol
         # For now use this for forward pass for output
         else:
@@ -75,7 +76,6 @@ class ODESolver(nn.Module):
 def adjoint_solve(func, z_final, t, model_params, dLdz_T, dt):
     # Initial augmented state s_0
     s_0 = (z_final, dLdz_T) + tuple(torch.zeros(param.shape, dtype = param.dtype, device = param.device) for param in model_params)
-
     # Define the augmented dynamics as per the algorithm, accept the current time t and the augmented state s
     def aug_dynamics(t, s):
         # Get the current state and the adjoint
@@ -104,15 +104,11 @@ def adjoint_solve(func, z_final, t, model_params, dLdz_T, dt):
     # Solve the augmented ODE backward in time using the ODESolver
 
     s_T = solver.forward(s_0, t_reversed)
-    
     # Extract the final augmented state
-    _, adj_z_T, *adj_params_T = s_T
-    
-    adj_z_T = adj_z_T[-1]
-    for i, param in enumerate(adj_params_T):
-        adj_params_T[i] = param[-1]
-
+    _, adj_z_T, *adj_params_T = s_T[0]
+ 
     # Extract the gradients from the final augmented state
     dLdz_0 = adj_z_T
     dLdp = [param.view_as(model_param) for param, model_param in zip(adj_params_T, model_params)]
+    # print(dLdp)
     return dLdz_0, dLdp
