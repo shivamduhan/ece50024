@@ -96,8 +96,9 @@ def experiment2(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_point
         # Reset the optimizer gradients to 0 befroe any backprop
         optimizer.zero_grad()
         # Get a batch of times and y values to test for
-        batch_t = list(sorted(t_new[np.random.choice(t_new.shape[0], size = batch_size, replace = False)]))
-        batch_y = true_y[batch_t]
+        # batch_t = list(sorted(t_new[np.random.choice(t_new.shape[0], size = batch_size, replace = False)]))
+        batch_t = t_new
+        batch_y = true_y
         # Get the predict for these times starting at the ground truth (since IVP, we always have y0)
         pred_y = solver(true_y0, batch_t)
         # Calculate the loss and backprop
@@ -185,12 +186,14 @@ def experiment3(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_point
         z_T.requires_grad_(True)
         loss_at_T = loss_fn(z_T, batch_y[-1])
         dLdz_T = torch.autograd.grad(loss_at_T, z_T)[0]
-
+        print("dLdz_T:", dLdz_T)
         # Iterate over time points in reverse order
         for t in range(len(batch_t) - 2, -1, -1):
             # Calculate the gradients using adjoint method
             dt = np.abs(batch_t[t + 1] - batch_t[t])
             dLdz_T, dLdp = adjoint_solve(ode_func, pred_y[t], batch_t[t: t + 2], tuple(ode_func.parameters()), dLdz_T, dt)
+            print("dLdz_T:", dLdz_T)
+            print("dLdp:", dLdp)
             # Accumulate gradients for each model parameter
             for param, grad in zip(ode_func.parameters(), dLdp):
                 param.grad = param.grad + grad if param.grad is not None else grad
@@ -214,12 +217,3 @@ def experiment3(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_point
     plt.grid()
     plt.savefig('./pictures/loss_spiral.png')
     plt.close()
-
-
-if __name__ == '__main__':
-    t_min = 0.0
-    t_max = 6 * np.pi
-    num_points = 2000
-    t_eval = torch.linspace(t_min, t_max, num_points)
-    dt = np.abs(t_eval[0] - t_eval[1])
-    experiment1(t_eval, dt)

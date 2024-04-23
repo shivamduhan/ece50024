@@ -29,7 +29,7 @@ in_dim = 2       # 2D data
 h = 192          # hidden dimension size
 batch_size = 2000 # Batch size
 num_epochs = 501 # Total epochs of training
-lr = 1e-2        # Learning rate
+lr = 1e-3        # Learning rate
 
 if __name__ == '__main__':
     # Generate timing data (for our task we generate trajectories over time)
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     
     # Experiment 3
     # Train using adjoint method
-    experiment3(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_points)
+    # experiment3(dev_used, ODEFunc, in_dim, num_epochs, lr, batch_size, num_points)
     
     # Adjoint methodcode, TODO: fix
     '''

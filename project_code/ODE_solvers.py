@@ -49,7 +49,7 @@ class ODESolver(nn.Module):
                 sol.append(y_next)
                 for j in range(len(y)):
                     y[j][i] = y_next[j]
-            print(sol[-1][-1])
+            # print(sol[-1][-1])
             return sol
         # For now use this for forward pass for output
         else:
