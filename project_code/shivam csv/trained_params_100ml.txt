@@ -1,0 +1,2 @@
+func.k: tensor([-0.1116])
+func.temp_ambient: tensor([34.6178])

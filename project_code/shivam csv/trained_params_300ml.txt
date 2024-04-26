@@ -1,0 +1,2 @@
+func.k: tensor([nan])
+func.temp_ambient: tensor([nan])

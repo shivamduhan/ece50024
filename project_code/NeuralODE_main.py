@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # experiment2(n_epoch = N_EPOCH, batch_size = BATCH_SIZE, plot_freq = plot_freq, file_name = "test") # Uncomment to run fitting to a spiral
     
     # Experient 3
-    N_EPOCH = 200
+    N_EPOCH = 2000
     BATCH_SIZE = 32
     plot_freq = 10
     experiment3(n_epoch = N_EPOCH, batch_size = BATCH_SIZE, plot_freq = plot_freq, true_data_file = "./Temperature_Data.csv", file_name = "real_world_example/newtons_law_of_cooling") # Uncomment to run fitting to a spiral
