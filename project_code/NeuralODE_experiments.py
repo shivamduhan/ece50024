@@ -167,6 +167,10 @@ def experiment3(n_epoch, batch_size, plot_freq, true_data_file, file_name):
             super(TrainCoolingODEF, self).__init__(torch.randn(1), torch.randn(1) + 18)
 
     # Train different models for all volumes
+<<<<<<< HEAD
+=======
+    # volumes = [100, 300, 800]
+>>>>>>> 6fc2d1a51f6630bc6c05aae9e316b4fa7627ec9e
     volumes = [300,]
     temp_tensors = [temp_tensor_100_ml, temp_tensor_300_ml, temp_tensor_800_ml]
     
