@@ -33,26 +33,33 @@ def experiment1(t_eval):
     # Plot
 
     # Create a figure and two subplots
-    fig, axs = plt.subplots(2, 1, figsize=(8, 6))
+    fig, axs = plt.subplots(3, 1, figsize = (8, 9))
 
+    # Plot the analytical function
+    analytical_f = 4 * torch.sin(t_eval) - 2 * torch.cos(t_eval)
+    axs[0].plot(t_eval, analytical_f, color = 'b')
+    axs[0].set_title('Analytical Solution')
+    
     # Plot solved ODE on the first subplot
-    axs[0].plot(t_eval, solved_ODE)
-    axs[0].set_title('Solved ODE')
+    axs[1].plot(t_eval, solved_ODE, color = 'black')
+    axs[1].set_title('Solution Using the ODE Solver')
 
     # Plot derivative values on the second subplot
-    axs[1].plot(t_eval, derivative_vals, color='r')
-    axs[1].set_title('Derivative Values')
+    axs[2].plot(t_eval, derivative_vals, color = 'r')
+    axs[2].set_title('Derivative Values')
 
     # Add labels and adjust layout
     plt.xlabel('Time')
     axs[0].set_ylabel('Function Value')
     axs[1].set_ylabel('Function Value')
+    axs[2].set_ylabel('Function Value')
     plt.tight_layout()
     axs[0].grid()
     axs[1].grid()
+    axs[2].grid()
     
     # Show the plot
-    plt.savefig(fname="./pictures/RK4_solver_test.png", format="png")
+    plt.savefig(fname = "./pictures/RK4_solver_test.png", format = "png")
     plt.close()
     return
 
@@ -61,8 +68,8 @@ def experiment2(n_epoch, batch_size, plot_freq, file_name):
     # First set the ode solver to the predetermined ODESolver object
     ode_solver = ODESolver()                                # ODE Solver
     # Spiral parameters
-    spiral_matrix = torch.Tensor([[-0.2, 1.], [-1., -0.2]]) # Matrix that describes the generated spiral
-    z_init = Variable(torch.Tensor([[-2.0, -2.0]]))         # Initial starting point for the spiral
+    spiral_matrix = torch.Tensor([[-0.1, -1.], [1., -0.1]]) # Matrix that describes the generated spiral
+    z_init = Variable(torch.Tensor([[0.6, 0.3]]))           # Initial starting point for the spiral
 
     # Linear ODE function to structure (will be used in our neural net) 
     class LinearODEF(ODEFunction):

@@ -248,8 +248,7 @@ def create_batch(observation_data, time_data_np, time_tensor, t_max_val, index_n
     # Generate the batch
     observation_batch = observation_data[idx]
     time_batch = time_tensor[idx]
-    print(observation_batch.size())
-    print(time_batch.size())
+    
     return observation_batch, time_batch
 
 # For generating batches 
