@@ -8,7 +8,7 @@ class sin_cos_comb(nn.Module):
         super(sin_cos_comb, self).__init__()
         self.a = a
         self.b = b
-    def forward(self, t, y):
+    def forward(self, y, t):
         return self.a * torch.sin(t) + self.b * torch.cos(t)
 
 # TODO: Add more functions to test fitting

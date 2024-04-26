@@ -3,6 +3,7 @@ import numpy as np
 
 import torch
 from torch import nn
+import matplotlib.pyplot as plt
 
 use_cuda = torch.cuda.is_available()
 
@@ -211,4 +212,25 @@ class NeuralODE(nn.Module):
             return z
         else:
             return z[-1]
-        
+
+# For plotting the solutions to ODEs
+def plot_ODE_sol(observations = None, times = None, pred_path = None, figname = None):
+        plt.figure(figsize = (16, 8))
+        # First plot the actual points
+        if observations is not None:
+            if times is None:
+                times = [None] * len(observations)
+            for observation, time in zip(observations, times):
+                observation, time = observation.detach().cpu().numpy(), time
+                # Iterate over all batch points, plot them
+                for b_i in range(observation.shape[1]):
+                    plt.scatter(observation[:, b_i, 0], observation[:, b_i, 1])
+        # If the prediction is available, also plot it
+        if pred_path is not None:
+            for pred_point in pred_path:
+                pred_point = pred_point.detach().cpu().numpy()
+                plt.plot(pred_point[:, 0, 0], pred_point[:, 0, 1], c = 'black')
+        # Save the figure if name available 
+        if figname is not None:
+            plt.savefig(figname)
+        plt.close()
