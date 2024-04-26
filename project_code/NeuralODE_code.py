@@ -261,7 +261,6 @@ def create_batch_newtons(observation_data, time_data_np, time_tensor, t_max_val,
     time_batch = time_tensor[idx].view(-1, 1, 1)
     return observation_batch, time_batch
 
-
 # For plotting the newton's law of cooling data
 def plot_newtons_data_results(true_data, time_data, pred_data, volume, epoch, file_name):
     plt.figure(figsize = (16, 8))
