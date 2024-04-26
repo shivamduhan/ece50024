@@ -38,4 +38,7 @@ if __name__ == '__main__':
     N_EPOCH = 1000
     BATCH_SIZE = 32
     plot_freq = 10
-    experiment2(n_epoch = N_EPOCH, batch_size = BATCH_SIZE, plot_freq = plot_freq, file_name = "example_spiral/spiral_fit")
+    # experiment2(n_epoch = N_EPOCH, batch_size = BATCH_SIZE, plot_freq = plot_freq, file_name = "example_spiral/spiral_fit") # Uncomment to run fitting to a spiral
+    
+    # Experient 3
+    
