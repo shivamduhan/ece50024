@@ -175,6 +175,11 @@ def experiment3(n_epoch, batch_size, plot_freq, true_data_file, file_name):
         ode_trained = NeuralODE(TrainCoolingODEF())
         optimizer = torch.optim.Adam(ode_trained.parameters(), lr = 0.05)
         temp_init = Variable(torch.Tensor(temp_tensor[0])).view(-1, 1)
+        # For saving the loss
+        loss_file = open(f'loss_log_{vol}ml.csv', 'w', newline = '')
+        loss_writer = csv.writer(loss_file)
+        loss_writer.writerow(['Epoch', 'Loss'])
+        
         # Run the training for specified number of epochs
         for i in range(n_epoch):
             # Batch data
@@ -185,9 +190,18 @@ def experiment3(n_epoch, batch_size, plot_freq, true_data_file, file_name):
             optimizer.zero_grad()
             loss.backward(retain_graph = True)  # Uses Adjoint method
             optimizer.step()
+            loss_writer.writerow([i, loss.item()])
 
             # Plot
             if i % plot_freq == 0:
                 full_prediction = ode_trained(temp_init, time_tensor, save_all = True, ode_solver = ode_solver)
                 plot_newtons_data_results(temp_tensor, time_tensor, full_prediction, vol, i, file_name)
                 print(f'Volume: {vol} ml, Epoch: [{i}/{n_epoch}], Loss: {loss.item():.4f}, {[_ for _ in ode_trained.parameters()]}')
+
+        loss_writer.close()
+
+        # Wanna see final k and temp
+        param_file = open(f'trained_params_{vol}ml.txt', 'w')
+        for name, param in ode_trained.named_parameters():
+            param_file.write(f'{name}: {param.data}\n')
+        param_file.close()
