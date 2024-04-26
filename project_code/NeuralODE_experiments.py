@@ -167,7 +167,7 @@ def experiment3(n_epoch, batch_size, plot_freq, true_data_file, file_name):
             super(TrainCoolingODEF, self).__init__(torch.randn(1), torch.randn(1) + 18)
 
     # Train different models for all volumes
-    volumes = [100, 300, 800]
+    volumes = [300,]
     temp_tensors = [temp_tensor_100_ml, temp_tensor_300_ml, temp_tensor_800_ml]
     
     for vol, temp_tensor in zip(volumes, temp_tensors):
@@ -198,7 +198,7 @@ def experiment3(n_epoch, batch_size, plot_freq, true_data_file, file_name):
                 plot_newtons_data_results(temp_tensor, time_tensor, full_prediction, vol, i, file_name)
                 print(f'Volume: {vol} ml, Epoch: [{i}/{n_epoch}], Loss: {loss.item():.4f}, {[_ for _ in ode_trained.parameters()]}')
 
-        loss_writer.close()
+        loss_file.close()
 
         # Wanna see final k and temp
         param_file = open(f'trained_params_{vol}ml.txt', 'w')
