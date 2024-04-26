@@ -242,11 +242,36 @@ def create_batch(observation_data, time_data_np, time_tensor, t_max_val, index_n
     max_delta_time = 5.0
     t0 = np.random.uniform(0, t_max_val - max_delta_time)
     t1 = t0 + np.random.uniform(min_delta_time, max_delta_time)
-
     # Get random indices for specified time range
     idx = sorted(np.random.permutation(index_np[(time_data_np > t0) & (time_data_np < t1)])[:num_points])
     
     # Generate the batch
     observation_batch = observation_data[idx]
     time_batch = time_tensor[idx]
+    print(observation_batch.size())
+    print(time_batch.size())
     return observation_batch, time_batch
+
+# For generating batches 
+def create_batch_newtons(observation_data, time_data_np, time_tensor, t_max_val, index_np, num_points):
+    # Choose from all data, just some part
+    idx = sorted(np.random.permutation(index_np[:])[:num_points])
+    # Generate the batch
+    observation_batch = observation_data[idx].view(-1, 1, 1)
+    time_batch = time_tensor[idx].view(-1, 1, 1)
+    return observation_batch, time_batch
+
+
+# For plotting the newton's law of cooling data
+def plot_newtons_data_results(true_data, time_data, pred_data, volume, epoch, file_name):
+    plt.figure(figsize = (16, 8))
+    plt.scatter(time_data.numpy(), true_data.numpy(), label = 'True Data')
+    plt.plot(time_data.numpy(), pred_data.detach().numpy()[:, 0], label = 'Prediction', c = 'black')
+    plt.xlabel('Time (min)')
+    plt.ylabel('Temperature (°C)')
+    plt.title(f'Cooling Curve for a liquid with volume {volume} ml')
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(f'./pictures/{file_name}_{volume}ml_epoch{epoch}.png')
+    plt.close()
