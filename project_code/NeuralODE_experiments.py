@@ -66,12 +66,13 @@ def experiment1(t_eval):
     return
 
 # Training NeuralODE to fit a spiral 
-def experiment2():
+def experiment2(n_epoch, file_name):
     # First set the ode solver to the predetermined ODESolver object
-    ode_solver = ODESolver()
-    spiral_matrix = torch.Tensor([[-0.1, 2.], [-2., -0.1]])
+    ode_solver = ODESolver()                                # ODE Solver
+    spiral_matrix = torch.Tensor([[-0.1, 2.], [-2., -0.1]]) # Matrix that describes the generated spiral
+    z_init = Variable(torch.Tensor([[-4.0, -2.0]]))         # Starting point for the experiment for generating spiral
     
-    def conduct_experiment(ode_true, ode_trained, n_steps, name, plot_freq=10, ode_solver = ode_solver):
+    def conduct_experiment(ode_true, ode_trained, n_steps, name, plot_freq = 10, ode_solver = ode_solver):
         # Create data
         z0 = Variable(torch.Tensor([[-4.0, -2.0]]))
 
@@ -115,9 +116,7 @@ def experiment2():
 
             if i % plot_freq == 0:
                 z_p = ode_trained(z0, times, save_all = True, ode_solver = ode_solver)
-
                 plot_ODE_sol(observations = [obs], times = [times], pred_path = [z_p], figname = f'./pictures/{name}_{i}.png')
-                clear_output(wait=True)
                 print(f'Epoch: {i}, loss: {loss}')
     
     
@@ -132,19 +131,19 @@ def experiment2():
             return self.lin(x)
 
     # True function
-    class SpiralFunctionExample(LinearODEF):
+    class SpiralFunction(LinearODEF):
         def __init__(self):
-            super(SpiralFunctionExample, self).__init__(spiral_matrix)
+            super(SpiralFunction, self).__init__(spiral_matrix)
             
     # Random initial guess for function
-    class RandomLinearODEF(LinearODEF):
+    class TrainLinearODEF(LinearODEF):
         def __init__(self):
-            super(RandomLinearODEF, self).__init__(torch.randn(2, 2)/2.)
+            super(TrainLinearODEF, self).__init__(torch.randn(2, 2)/2.)
 
-    ode_true = NeuralODE(SpiralFunctionExample())
-    ode_trained = NeuralODE(RandomLinearODEF())
+    ode_true = NeuralODE(SpiralFunction())
+    ode_trained = NeuralODE(TrainLinearODEF())
 
-    conduct_experiment(ode_true, ode_trained, 1000, "spiral_fit_linear")
+    conduct_experiment(ode_true, ode_trained, n_epoch, file_name)
     
 if __name__ == '__main__':
     # Generate timing data (for our task we generate trajectories over time)
@@ -158,4 +157,5 @@ if __name__ == '__main__':
     experiment1(t_eval)
     
     # Experiment 2 
-    # experiment2()
+    N_EPOCH = 1000
+    experiment2(n_epoch = N_EPOCH, file_name = "spiral_fit")
