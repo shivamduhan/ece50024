@@ -237,13 +237,16 @@ def plot_ODE_sol(observations = None, times = None, pred_path = None, figname = 
         
 # For generating batches 
 def create_batch(observation_data, time_data_np, time_tensor, t_max_val, index_np, num_points):
+    
         min_delta_time = 1.0
         max_delta_time = 5.0
         t0 = np.random.uniform(0, t_max_val - max_delta_time)
         t1 = t0 + np.random.uniform(min_delta_time, max_delta_time)
 
+        # Get random indices for specified time range
         idx = sorted(np.random.permutation(index_np[(time_data_np > t0) & (time_data_np < t1)])[:num_points])
-
-        obs_ = observation_data[idx]
-        ts_ = time_tensor[idx]
-        return obs_, ts_
+        
+        # Generate the batch
+        observation_batch = observation_data[idx]
+        time_batch = time_tensor[idx]
+        return observation_batch, time_batch
