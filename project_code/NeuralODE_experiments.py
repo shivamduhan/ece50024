@@ -175,10 +175,11 @@ def experiment3(n_epoch, batch_size, plot_freq, true_data_file, file_name):
 
     # Train different models for all volumes
     # volumes = [100, 300, 800]
-    volumes = [100,]
-    temp_tensors = [temp_tensor_100_ml, temp_tensor_300_ml, temp_tensor_800_ml]
+    volumes = [300,]
+    temp_tensors = [temp_tensor_300_ml,]
     
     for vol, temp_tensor in zip(volumes, temp_tensors):
+        print(vol, temp_tensor)
         # Neural ODE for training, use Adam optim
         ode_trained = NeuralODE(TrainCoolingODEF())
         optimizer = torch.optim.Adam(ode_trained.parameters(), lr = 0.05)

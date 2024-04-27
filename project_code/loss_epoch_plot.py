@@ -16,9 +16,9 @@ def plot_loss_epoch(filename):
 
 
 if __name__ == "__main__":
-    plot_loss_epoch("loss_log_800ml.csv")
+    plot_loss_epoch("loss_log_300ml.csv")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.title("Loss vs Epoch")
-    plt.savefig("pictures/loss_log/800ml.png")
+    plt.savefig("pictures/loss_log/300ml.png")
     plt.show()
